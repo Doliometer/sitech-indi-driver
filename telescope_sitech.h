@@ -18,56 +18,53 @@
 
 #ifndef SCOPESITECH_H
 #define SCOPESITECH_H
-#include "indibase/indiguiderinterface.h"
-#include "indibase/inditelescope.h"
-#include "indicontroller.h"
-#include "indidevapi.h"
-#include "indicom.h"
-#include "indibase/baseclient.h"
+#include "libindi/indiguiderinterface.h"
+#include "libindi/inditelescope.h"
+#include "libindi/indicontroller.h"
+#include "libindi/indidevapi.h"
+#include "libindi/indicom.h"
+#include "libindi/baseclient.h"
+
 class ScopeSiTech : public INDI::Telescope, public INDI::GuiderInterface
 {
 public:
     ScopeSiTech();
     virtual ~ScopeSiTech();
-
-    virtual const char *getDefaultName();
-    virtual bool Handshake();
-//    virtual bool Connect();
-//    virtual bool Disconnect();
-    virtual bool ReadScopeStatus();
     virtual bool initProperties();
+    virtual bool ReadScopeStatus();
     virtual void ISGetProperties (const char *dev);
     virtual bool updateProperties();
 
     virtual bool ISNewNumber (const char *dev, const char *name, double values[], char *names[], int n);
     virtual bool ISNewSwitch (const char *dev, const char *name, ISState *states, char *names[], int n);
 
-    protected:
-
-    virtual bool MoveNS(INDI_DIR_NS dir, TelescopeMotionCommand command);
-    virtual bool MoveWE(INDI_DIR_WE dir, TelescopeMotionCommand command);
+protected:
     virtual bool Abort();
 
-    virtual IPState GuideNorth(float ms);
-    virtual IPState GuideSouth(float ms);
-    virtual IPState GuideEast(float ms);
-    virtual IPState GuideWest(float ms);
+    virtual IPState GuideNorth(uint32_t ms) override;
+    virtual IPState GuideSouth(uint32_t ms) override;
+    virtual IPState GuideEast(uint32_t ms) override;
+    virtual IPState GuideWest(uint32_t ms) override;
 
     bool Goto(double,double);
     bool Park();
     bool UnPark();
     bool Sync(double ra, double dec);
 
+    const char *getDefaultName();
+    bool Handshake() override;
+
     // Parking
     virtual bool SetCurrentPark();
     virtual bool SetDefaultPark();
 
-    private:
+private:
     bool SetUpVarsFromReturnString(char * ScopeAnswer, bool PrintBools);
     bool setSiTechTracking(bool enable, bool isSidereal, double raRate, double deRate);
     int currentTrackMode;
-
+    unsigned int DBG_SCOPE;
     char * GetStringFromSerial(char * Send);
+
     double currentRA;
     double currentDEC;
     double currentAlt;
@@ -89,22 +86,15 @@ public:
     bool IsInBlinky;
     bool IsCommunicatingWithController;
 
-    unsigned int DBG_SCOPE;
-
-    double guiderEWTarget[2];
     double guiderNSTarget[2];
-
-    INumber GuideRateN[2];
-    INumberVectorProperty GuideRateNP;
-
+    double guiderEWTarget[2];
 
     // Tracking Mode
     ISwitch TrackModeS[4];
     ISwitchVectorProperty TrackModeSP;
     // Tracking Rate
-    INumber TrackRateN[2];
-    INumberVectorProperty TrackRateNP;
-
+    INumber GuideRateN[2];
+    INumberVectorProperty GuideRateNP;
 };
 
 #endif // SCOPESITECH_H
